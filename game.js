@@ -128,7 +128,6 @@ const heartPrices = [50, 200, 500, 2000, 10000];
 let shakeAmt = 0;
 let particles = [];
 let projectiles = [];
-let damageNumbers = [];
 let floatingTexts = [];
 let shopSelection = 0;
 let bgStars = [];
@@ -196,7 +195,6 @@ function roll(count, sides, bonus = 0) {
 function takeDmg() {
   player.hp -= 1;
   player.combo = 0;
-  showDamage(player.x, player.pos, 1);
   spawnBloodParticles(player.x, player.pos, 1);
   updateGameUI();
   if (player.hp <= 0) {
@@ -209,39 +207,15 @@ function play(freq, dur = 0.1, type = 'square') {
   const ctx = scene.sound.context;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  const reverb = ctx.createConvolver();
-  const wetGain = ctx.createGain();
-  const dryGain = ctx.createGain();
 
-  // Create simple reverb impulse
-  const impulseLength = ctx.sampleRate * 2; // 2 seconds
-  const impulse = ctx.createBuffer(2, impulseLength, ctx.sampleRate);
-  for (let channel = 0; channel < 2; channel++) {
-    const channelData = impulse.getChannelData(channel);
-    for (let i = 0; i < impulseLength; i++) {
-      channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / impulseLength, 2) * 0.1;
-    }
-  }
-  reverb.buffer = impulse;
-
-  // Connect: osc -> dryGain -> destination
-  //          osc -> reverb -> wetGain -> destination
-  osc.connect(dryGain);
-  osc.connect(reverb);
-  reverb.connect(wetGain);
-  dryGain.connect(ctx.destination);
-  wetGain.connect(ctx.destination);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
 
   osc.frequency.value = freq;
   osc.type = type;
 
-  // Dry signal (direct)
-  dryGain.gain.setValueAtTime(0.04, ctx.currentTime);
-  dryGain.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + dur);
-
-  // Wet signal (reverb)
-  wetGain.gain.setValueAtTime(0.02, ctx.currentTime);
-  wetGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  gain.gain.setValueAtTime(0.04, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + dur);
 
   osc.start(ctx.currentTime);
   osc.stop(ctx.currentTime + dur);
@@ -447,10 +421,6 @@ function spawnBloodParticles(x, y, damage = 1) {
 
     particles.push(particle);
   }
-}
-
-function showDamage(x, y, dmg, color = 0xff0000) {
-  damageNumbers.push({ x: x, y: y, dmg: dmg, life: 1.0, color: color });
 }
 
 function showBigText(text, x, y, color = '#ffff00', size = 32, duration = 1500) {
@@ -737,7 +707,7 @@ dragonGraphics.destroy();
     strokeThickness: 3
   }).setOrigin(0.5);
 
-  texts.zone = this.add.text(400, 100, '', {
+  texts.zone = this.add.text(400, 30, '', {
     fontSize: '28px', fontFamily: 'Arial', color: '#00ffff',
     stroke: '#000', strokeThickness: 4
   }).setOrigin(0.5).setVisible(false).setDepth(500);
@@ -1005,25 +975,6 @@ function update(time, delta) {
         graphics.fillCircle(proj.x, proj.y, 8);
           }
         }
-      }
-    }
-  }
-  
-  // Update damage numbers
-  for (let i = damageNumbers.length - 1; i >= 0; i--) {
-    const dn = damageNumbers[i];
-    dn.y -= 50 * delta / 1000;
-    dn.life -= delta / 1000 * 2;
-    
-    if (dn.life <= 0) {
-      damageNumbers.splice(i, 1);
-    } else {
-      graphics.fillStyle(dn.color, dn.life);
-      graphics.fillRect(dn.x - 2, dn.y - 2, 4, 4);
-      // Simple number rendering
-      const dmgStr = '-' + dn.dmg;
-      for (let j = 0; j < dmgStr.length; j++) {
-        graphics.fillRect(dn.x + j * 10, dn.y, 2, 10);
       }
     }
   }
@@ -1689,17 +1640,24 @@ function handleInput(event) {
           play(150, 0.2);
         }
       } else if (shopSelection === 2) {
-        // Buy HP - upgrade max HP (+5) and heal that amount
-        if (player.money >= upgradePrices.hp) {
+        // Buy HP - upgrade max HP (max 10) and heal that amount
+        if (player.money >= upgradePrices.hp && player.maxHp < 10) {
           player.money -= upgradePrices.hp;
           const gain = 1; // Fixed +1 HP
           player.maxHp += gain;
           player.hp += gain; // Heal the amount gained
           upgradeLevel.hp++;
-          upgradePrices.hp = Math.floor(upgradePrices.hp * 2.5);
-          showBigText(`VIDA MAXIMA +${gain}!`, 400, 200, '#ff0000', 44, 2000);
+          // Dynamic pricing: cheaper progression, 10th heart costs ~1500
+          // Hearts: 1->2(50), 2->3(87), 3->4(138), 4->5(211), 5->6(322), 6->7(492), 7->8(750), 8->9(1137), 9->10(1718)
+          if (player.maxHp < 10) {
+            upgradePrices.hp = Math.floor(upgradePrices.hp * 1.51 + 12);
+          }
+          showBigText(`VIDA MAXIMA +${gain}! [${player.maxHp}/10]`, 400, 200, '#ff0000', 44, 2000);
           play(880, 0.3);
           updateShopText();
+        } else if (player.maxHp >= 10) {
+          showBigText('¡YA TIENES MAXIMO HP!', 400, 200, '#ffaa00', 36, 2000);
+          play(150, 0.2);
         } else {
           play(150, 0.2);
         }
@@ -2083,17 +2041,32 @@ function openChest() {
   if (zone >= 4) {
     const rand = Math.random();
     if (rand < 0.5) {
-      // 50% - Heal (Full restore)
-      const healAmount = player.maxHp - player.hp;
-      player.hp = player.maxHp;
-      showBigText('🍌 PLATANO MAGICO! 🍌', 600, 280, '#ffff00', 48, 2800);
-      showBigText(`VIDA TOTAL +${healAmount} HP!`, 600, 340, '#00ff00', 38, 2500);
-      play(880, 0.4, 'sine');
-      spawnParticles(600, 300, 0xffff00, 30);
-      for (let i = 0; i < 15; i++) {
-        setTimeout(() => spawnParticles(600, 300, 0x00ff00, 3), i * 60);
+      // 50% - Heal (Full restore) - OR +1 maxHP if already at full
+      if (player.hp === player.maxHp) {
+        // Already at max HP - grant +1 maxHP!
+        player.maxHp += 1;
+        player.hp = player.maxHp;
+        showBigText('🍌 PLATANO DIVINO! 🍌', 600, 280, '#ffff00', 48, 2800);
+        showBigText(`¡+1 VIDA MAXIMA! [${player.maxHp}/10]`, 600, 340, '#00ff00', 38, 2500);
+        play(1320, 0.5, 'sine');
+        spawnParticles(600, 300, 0xffff00, 50);
+        for (let i = 0; i < 20; i++) {
+          setTimeout(() => spawnParticles(600, 300, 0x00ff00, 5), i * 50);
+        }
+        shake(15);
+      } else {
+        // Not at max HP - normal heal
+        const healAmount = player.maxHp - player.hp;
+        player.hp = player.maxHp;
+        showBigText('🍌 PLATANO MAGICO! 🍌', 600, 280, '#ffff00', 48, 2800);
+        showBigText(`VIDA TOTAL +${healAmount} HP!`, 600, 340, '#00ff00', 38, 2500);
+        play(880, 0.4, 'sine');
+        spawnParticles(600, 300, 0xffff00, 30);
+        for (let i = 0; i < 15; i++) {
+          setTimeout(() => spawnParticles(600, 300, 0x00ff00, 3), i * 60);
+        }
+        shake(10);
       }
-      shake(10);
     } else {
       // 50% - +1 Damage
       player.dmg += 1;
@@ -2113,18 +2086,33 @@ function openChest() {
       play(200, 0.3);
       spawnParticles(600, 300, 0x666666, 8);
     } else if (rand < 0.27) {
-      // 15% - Banana (heals 50% HP)
-      const healAmount = Math.floor(player.maxHp * 0.5);
-      const actualHeal = Math.min(healAmount, player.maxHp - player.hp);
-      player.hp = Math.min(player.maxHp, player.hp + healAmount);
-      showBigText('🍌 PLATANO ENCONTRADO! 🍌', 600, 280, '#ffff00', 48, 2800);
-      showBigText(`VIDA RESTAURADA +${actualHeal} HP!`, 600, 340, '#00ff00', 38, 2500);
-      play(880, 0.4, 'sine');
-      spawnParticles(600, 300, 0xffff00, 30);
-      for (let i = 0; i < 15; i++) {
-        setTimeout(() => spawnParticles(600, 300, 0x00ff00, 3), i * 60);
+      // 15% - Banana (heals 50% HP) - OR +1 maxHP if already at full
+      if (player.hp === player.maxHp) {
+        // Already at max HP - grant +1 maxHP!
+        player.maxHp += 1;
+        player.hp = player.maxHp;
+        showBigText('🍌 PLATANO DIVINO! 🍌', 600, 280, '#ffff00', 48, 2800);
+        showBigText(`¡+1 VIDA MAXIMA! [${player.maxHp}/10]`, 600, 340, '#00ff00', 38, 2500);
+        play(1320, 0.5, 'sine');
+        spawnParticles(600, 300, 0xffff00, 50);
+        for (let i = 0; i < 20; i++) {
+          setTimeout(() => spawnParticles(600, 300, 0x00ff00, 5), i * 50);
+        }
+        shake(15);
+      } else {
+        // Not at max HP - normal heal
+        const healAmount = Math.floor(player.maxHp * 0.5);
+        const actualHeal = Math.min(healAmount, player.maxHp - player.hp);
+        player.hp = Math.min(player.maxHp, player.hp + healAmount);
+        showBigText('🍌 PLATANO ENCONTRADO! 🍌', 600, 280, '#ffff00', 48, 2800);
+        showBigText(`VIDA RESTAURADA +${actualHeal} HP!`, 600, 340, '#00ff00', 38, 2500);
+        play(880, 0.4, 'sine');
+        spawnParticles(600, 300, 0xffff00, 30);
+        for (let i = 0; i < 15; i++) {
+          setTimeout(() => spawnParticles(600, 300, 0x00ff00, 3), i * 60);
+        }
+        shake(10);
       }
-      shake(10);
     } else if (rand < 0.42) {
       // 15% - Rare Loot
       const money = ZONES[zone][Z.RARE_VAL];
@@ -2454,10 +2442,10 @@ function nextEvent() {
   // Zona 4 (EL ABISMO): Solo enemigos y cofres, sin minerales (3 eventos)
   if (zone === 4) {
     const roll = Math.random();
-    if (roll < 0.867) { // 86.7% enemigos (aumentado desde 60%)
+    if (roll < 0.70) { // 70% enemigos
       spawnEnemy();
     } else {
-      spawnChest(); // 13.3% cofres (1/3 de 40% = 13.3%)
+      spawnChest(); // 30% cofres (¡AUMENTADO!)
     }
     updateGameUI();
     return;
@@ -2465,10 +2453,10 @@ function nextEvent() {
   
   // Zonas normales (0-3): Minerales, enemigos y cofres
   const eventRoll = roll(1, 15); // Cambiar de 1-10 a 1-15 para ajustar probabilidades
-  if (eventRoll <= 4) {
-    spawnEnemy(); // 4/15 ≈ 26.7%
-  } else if (eventRoll <= 5) {
-    spawnChest(); // 1/15 ≈ 6.7% (1/3 de 20% original)
+  if (eventRoll <= 3) {
+    spawnEnemy(); // 3/15 = 20%
+  } else if (eventRoll <= 6) {
+    spawnChest(); // 3/15 = 20% (¡AUMENTADO!)
   } else {
     // Max 3 minerals per zone
     if (mineralsInZone < 3) {
@@ -2640,7 +2628,6 @@ function resetGame() {
   particles.forEach(p => p.destroy());
   particles = [];
   projectiles = [];
-  damageNumbers = [];
   bgStars = [];
   particleEmitters = [];
   directionChoice = null;
