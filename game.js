@@ -107,6 +107,8 @@ const INPUT_DEBOUNCE_MS = 150; // Minimum time between inputs
 let canAttack = true;
 let graphics, scene, texts = {};
 let runMoney = 0;
+// Player trail (super-optimized)
+let trail=[];
 let upgradePrices = { hp: 50, dmg: 100, speed: 33, timing: 200, mining: 99 }
 let upgradeLevel = { timing: 0 };
 let shakeAmt = 0;
@@ -685,6 +687,11 @@ dragonGraphics.destroy();
 
 function update(time, delta) {
   graphics.clear();
+  // Draw player trail (tiny faded circles, longer)
+  for(let i=0;i<trail.length;i++){
+    graphics.fillStyle(0xffff00,0.04+0.04*i);
+    graphics.fillCircle(trail[i][0],trail[i][1],2+i*0.18);
+  }
 
   // Menu animations
   if (state === 'MENU') {
@@ -710,6 +717,11 @@ function update(time, delta) {
   }
 
   // Continuous player movement
+  // Update player trail (store last 20 positions)
+  if(state==='GAME'){
+    trail.push([player.x,player.pos]);
+    if(trail.length>20)trail.shift();
+  }
   if (state === 'GAME') {
     const moveSpeed = player.moveSpeed * delta / 1000; // Use player's move speed stat
     const topBarHeight = 180;
@@ -2020,7 +2032,7 @@ function openChest() {
     } else if (rand < 0.35) {
       // 15% - +1 Damage (increased from 10%)
       player.dmg += 1;
-  showBigText('⚔️ PICO MAS GRANDE +1 DMG! ⚔️', 400, 330, '#ff4400', 48);
+  showBigText('⚔️ PICO MAS GRANDE +1 DMG! ', 400, 330, '#ff4400', 48);
       play(1200, 0.6, 'sawtooth');
       spawnParticles(600, 300, 0xff4400, 40);
       shake(18);
@@ -2028,7 +2040,7 @@ function openChest() {
       // 15% - Ojo de Halcón (Timing Zone +10%) - increased from 10%
       player.timingBonus += 0.1;
       updateTimingZone(false);
-  showBigText('🦅 OJO DE HALCON! 🦅', 400, 330, '#ffaa00', 48);
+  showBigText('🦅 OJO DE HALCON! ', 400, 330, '#ffaa00', 48);
   showBigText('ZONA VERDE +10% MAS GRANDE!', 400, 370, '#00ff00', 36);
       play(1400, 0.5, 'sine');
       spawnParticles(600, 300, 0xffaa00, 35);
@@ -2036,7 +2048,7 @@ function openChest() {
     } else if (zone === 0 && rand < 0.60) {
       // 10% - Pico Bendito (ONLY in BOSQUE - zone 0) - reduced from 15%
       player.miningBonus += 1.0;
-  showBigText('⛏️ PICO BENDITO! ⛏️', 400, 330, '#00ffff', 48);
+  showBigText('⛏️ PICO BENDITO! ', 400, 330, '#00ffff', 48);
   showBigText('MINERALES DAN X2 RECURSOS!', 400, 370, '#ffff00', 36);
       play(1100, 0.5, 'triangle');
       spawnParticles(600, 300, 0x00ffff, 35);
