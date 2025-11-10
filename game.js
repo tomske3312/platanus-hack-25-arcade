@@ -1951,8 +1951,8 @@ function openChest() {
         // Already at max HP - grant +1 maxHP!
         player.maxHp += 1;
         player.hp = player.maxHp;
-        showBigText('🍌 PLATANO DIVINO! 🍌', 600, 280, '#ffff00', 48, 2800);
-        showBigText(`¡+1 VIDA MAXIMA! [${player.maxHp} HP]`, 600, 340, '#00ff00', 38, 2500);
+  showBigText('🍌 PLATANO DIVINO! 🍌', 400, 330, '#ffff00', 48, 2800);
+  showBigText(`¡+1 VIDA MAXIMA! [${player.maxHp} HP]`, 400, 370, '#00ff00', 38, 2500);
         play(1320, 0.5, 'sine');
         spawnParticles(600, 300, 0xffff00, 60);
         spawnParticles(600, 300, 0x00ff00, 25);
@@ -1961,8 +1961,8 @@ function openChest() {
         // Not at max HP - normal heal
         const healAmount = player.maxHp - player.hp;
         player.hp = player.maxHp;
-        showBigText('🍌 PLATANO MAGICO! 🍌', 600, 280, '#ffff00', 48, 2800);
-        showBigText(`VIDA TOTAL +${healAmount} HP!`, 600, 340, '#00ff00', 38, 2500);
+  showBigText('🍌 PLATANO MAGICO! 🍌', 400, 330, '#ffff00', 48, 2800);
+  showBigText(`VIDA TOTAL +${healAmount} HP!`, 400, 370, '#00ff00', 38, 2500);
         play(880, 0.4, 'sine');
         spawnParticles(600, 300, 0xffff00, 40);
         spawnParticles(600, 300, 0x00ff00, 15);
@@ -1971,7 +1971,7 @@ function openChest() {
     } else if (rand < 0.8) {
       // 40% - +1 Damage
       player.dmg += 1;
-      showBigText('⚔️ PICO AFILADO +1! ⚔️', 600, 280, '#ff4400', 48);
+  showBigText('⚔️ PICO AFILADO +1! ⚔️', 400, 330, '#ff4400', 48);
       play(1200, 0.6, 'sawtooth');
       spawnParticles(600, 300, 0xff4400, 40);
       shake(18);
@@ -1979,8 +1979,8 @@ function openChest() {
       // 20% - Ojo de Halcón (Timing Zone +10%)
       player.timingBonus += 0.1;
       updateTimingZone(false);
-      showBigText('🦅 OJO DE HALCON! 🦅', 600, 280, '#ffaa00', 48);
-      showBigText('ZONA VERDE +10% MAS GRANDE!', 600, 340, '#00ff00', 36);
+  showBigText('🦅 OJO DE HALCON! 🦅', 400, 330, '#ffaa00', 48);
+  showBigText('ZONA VERDE +10% MAS GRANDE!', 400, 370, '#00ff00', 36);
       play(1400, 0.5, 'sine');
       spawnParticles(600, 300, 0xffaa00, 35);
       shake(12);
@@ -1990,7 +1990,7 @@ function openChest() {
     const rand = Math.random();
     if (rand < 0.05) {
       // 5% - Empty (reduced from 12%)
-      showBigText('COFRE VACIO!', 600, 300, '#666666', 40);
+  showBigText('COFRE VACIO!', 400, 370, '#666666', 40);
       play(200, 0.3);
       spawnParticles(600, 300, 0x666666, 8);
     } else if (rand < 0.20) {
@@ -1999,8 +1999,8 @@ function openChest() {
         // Already at max HP - grant +1 maxHP!
         player.maxHp += 1;
         player.hp = player.maxHp;
-        showBigText('🍌 PLATANO DIVINO! 🍌', 600, 280, '#ffff00', 48, 2800);
-        showBigText(`¡+1 VIDA MAXIMA! [${player.maxHp} HP]`, 600, 340, '#00ff00', 38, 2500);
+  showBigText('🍌 PLATANO DIVINO! 🍌', 400, 330, '#ffff00', 48, 2800);
+  showBigText(`¡+1 VIDA MAXIMA! [${player.maxHp} HP]`, 400, 370, '#00ff00', 38, 2500);
         play(1320, 0.5, 'sine');
         spawnParticles(600, 300, 0xffff00, 60);
         spawnParticles(600, 300, 0x00ff00, 25);
@@ -2010,8 +2010,8 @@ function openChest() {
         const healAmount = Math.floor(player.maxHp * 0.5);
         const actualHeal = Math.min(healAmount, player.maxHp - player.hp);
         player.hp = Math.min(player.maxHp, player.hp + healAmount);
-        showBigText('🍌 PLATANO ENCONTRADO! 🍌', 600, 280, '#ffff00', 48, 2800);
-        showBigText(`VIDA RESTAURADA +${actualHeal} HP!`, 600, 340, '#00ff00', 38, 2500);
+  showBigText('🍌 PLATANO ENCONTRADO! 🍌', 400, 330, '#ffff00', 48, 2800);
+  showBigText(`VIDA RESTAURADA +${actualHeal} HP!`, 400, 370, '#00ff00', 38, 2500);
         play(880, 0.4, 'sine');
         spawnParticles(600, 300, 0xffff00, 40);
         spawnParticles(600, 300, 0x00ff00, 15);
@@ -2020,7 +2020,7 @@ function openChest() {
     } else if (rand < 0.35) {
       // 15% - +1 Damage (increased from 10%)
       player.dmg += 1;
-      showBigText('⚔️ PICO MAS GRANDE +1 DMG! ⚔️', 600, 280, '#ff4400', 48);
+  showBigText('⚔️ PICO MAS GRANDE +1 DMG! ⚔️', 400, 330, '#ff4400', 48);
       play(1200, 0.6, 'sawtooth');
       spawnParticles(600, 300, 0xff4400, 40);
       shake(18);
@@ -2028,16 +2028,16 @@ function openChest() {
       // 15% - Ojo de Halcón (Timing Zone +10%) - increased from 10%
       player.timingBonus += 0.1;
       updateTimingZone(false);
-      showBigText('🦅 OJO DE HALCON! 🦅', 600, 280, '#ffaa00', 48);
-      showBigText('ZONA VERDE +10% MAS GRANDE!', 600, 340, '#00ff00', 36);
+  showBigText('🦅 OJO DE HALCON! 🦅', 400, 330, '#ffaa00', 48);
+  showBigText('ZONA VERDE +10% MAS GRANDE!', 400, 370, '#00ff00', 36);
       play(1400, 0.5, 'sine');
       spawnParticles(600, 300, 0xffaa00, 35);
       shake(12);
     } else if (zone === 0 && rand < 0.60) {
       // 10% - Pico Bendito (ONLY in BOSQUE - zone 0) - reduced from 15%
       player.miningBonus += 1.0;
-      showBigText('⛏️ PICO BENDITO! ⛏️', 600, 280, '#00ffff', 48);
-      showBigText('MINERALES DAN X2 RECURSOS!', 600, 340, '#ffff00', 36);
+  showBigText('⛏️ PICO BENDITO! ⛏️', 400, 330, '#00ffff', 48);
+  showBigText('MINERALES DAN X2 RECURSOS!', 400, 370, '#ffff00', 36);
       play(1100, 0.5, 'triangle');
       spawnParticles(600, 300, 0x00ffff, 35);
       shake(15);
@@ -2046,7 +2046,7 @@ function openChest() {
       const money = ZONES[zone][Z.CHEST];
       player.treasures += money;
       runMoney += money;
-      showBigText(`+💎${money} TESORO!`, 600, 340, '#ffff88', 36);
+  showBigText(`+💎${money} TESORO!`, 400, 370, '#ffff88', 36);
       play(800, 0.4, 'sine');
       spawnParticles(600, 300, 0xffff00, 35);
       spawnParticles(600, 300, 0xffdd00, 15);
@@ -2165,7 +2165,7 @@ function showDirectionChoice(wasChest = false) {
   lastEventWasChest = wasChest;
 
   // Clear any existing arrows and block texts
-  directionArrows.forEach(arrow => arrow.destroy());
+  directionArrows.forEach(a => { if(a && a.destroy) a.destroy(); });
   directionArrows = [];
 
   // Clear block texts when navigation becomes available
@@ -2286,7 +2286,7 @@ function showDirectionChoice(wasChest = false) {
 
 function selectDirection(choice) {
   // Hide arrows and hint
-  directionArrows.forEach(arrow => arrow.destroy());
+  directionArrows.forEach(a => { if(a && a.destroy) a.destroy(); });
   directionArrows = [];
 
   if (choice === 'forward') {
@@ -2922,10 +2922,10 @@ function showVictory() {
   texts.subtitle.setText(
     `Profundidad Alcanzada: ${ZONES[finalZone][0]}\n\n` +
     `Score Total: $${runMoney}\n\n` +
-    `Oro Final: $${player.money}\n\n` +
+    `Eres un maestro Del pico... para cuando la pala?\n\n` +
     `Tiempo total: ${elapsed} segundos\n\n` +
     `PRESIONA START PARA DESCENDER DE NUEVO`
-  ).setVisible(true).setPosition(400, 280).setColor('#ffed4e');
+  ).setVisible(true).setPosition(400, 340).setColor('#ffed4e');
   
   texts.info.setVisible(false);
   
